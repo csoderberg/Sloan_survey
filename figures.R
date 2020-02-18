@@ -324,6 +324,18 @@ discipline_favor <- survey_data %>%
 
 plot(likert(as.data.frame(discipline_favor)), text.size = 4) +
   theme(legend.title = element_blank(), legend.text=element_text(size=12), axis.text = element_text(size = 12))
+
+
+# Alter names of levels and wrap for better graph display
+survey_data <- survey_data %>%
+                    mutate(acad_career_stage = fct_recode(acad_career_stage, 
+                                                             `Grad Student` = 'Grad_Student',
+                                                             `Post doc` = 'Post_doc', 
+                                                             `Assist Prof` = 'Assist_Prof', 
+                                                             `Assoc Prof` = 'Assoc_Prof', 
+                                                             `Full Prof` = 'Full_Prof'))
+
+levels(survey_data$acad_career_stage) <- str_wrap(levels(survey_data$acad_career_stage),15)
   
 
 # use/submissions of preprints by academic career stage
@@ -337,9 +349,12 @@ survey_data %>%
   ggplot(aes(fill = preprints_used, x = reorder(acad_career_stage, desc(acad_career_stage)), y = perc)) +
   geom_col(stat = 'identity', position = 'fill') +
   geom_text(aes(x = acad_career_stage ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
+  scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +
   scale_fill_brewer(direction = -1, palette = "BrBG") +
   theme(legend.text=element_text(size=16), legend.title = element_blank(),
-        axis.text = element_text(size = 16), axis.title = element_text(size = 16))  +
+        axis.text = element_text(size = 16), axis.title = element_text(size = 16),
+        axis.title.x = element_text(vjust = -.5),
+        plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))  +
   labs(y = 'Percentage of Respondents', x = 'Career Stage')
 
 
@@ -353,9 +368,12 @@ survey_data %>%
   ggplot(aes(fill = preprints_submitted, x = reorder(acad_career_stage, desc(acad_career_stage)), y = perc)) +
   geom_col(stat = 'identity', position = 'fill') +
   geom_text(aes(x = acad_career_stage ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
+  scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +
   scale_fill_brewer(direction = -1, palette = "BrBG") +
   theme(legend.text=element_text(size=16), legend.title = element_blank(),
-        axis.text = element_text(size = 16), axis.title = element_text(size = 16))  +
+        axis.text = element_text(size = 16), axis.title = element_text(size = 16),
+        axis.title.x = element_text(vjust = -.5),
+        plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))  +
   labs(y = 'Percentage of Respondents', x = 'Career Stage')
 
 
