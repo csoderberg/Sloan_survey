@@ -11,7 +11,7 @@ library(wesanderson)
 osf_retrieve_file("https://osf.io/86upq/") %>% 
   osf_download(overwrite = T)
 
-all_data <- read_csv(here::here('/Documents/data-science/Sloan_grant/Survey/cleaned_data.csv'), col_types = cols(.default = col_number(),
+all_data <- read_csv(here::here('cleaned_data.csv'), col_types = cols(.default = col_number(),
                                                                          StartDate = col_datetime(format = '%m/%d/%y %H:%M'),
                                                                          EndDate = col_datetime(format = '%m/%d/%y %H:%M'),
                                                                          ResponseId = col_character(),
