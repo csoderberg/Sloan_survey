@@ -33,7 +33,9 @@ all_data <- read_csv(here::here('cleaned_data.csv'), col_types = cols(.default =
                                                                          how_heard = col_character(),
                                                                          hdi_level = col_factor(),
                                                                          age = col_character())) %>%
-                  mutate(acad_career_stage = fct_relevel(acad_career_stage, 'Full Prof', 'Assoc Prof', 'Assist Prof', 'Post doc', 'Grad Student'),
+                  mutate(acad_career_stage = fct_recode(acad_career_stage, Full_Prof = 'Full Prof', Assoc_Prof = 'Assoc Prof', Assist_Prof = 'Assist Prof', Post_doc = 'Post doc', Grad_Student = 'Grad Student'),
+                         acad_career_stage = fct_relevel(acad_career_stage, 'Full_Prof', 'Assoc_Prof', 'Assist_Prof', 'Post_doc', 'Grad_Student'),
+                         discipline_collapsed = fct_recode(discipline_collapsed, Other_SocialSciences = 'Other Social Sciences', Life_Sciences = 'Life Sciences (Biology)', Med_Health = 'Medicine and Health Sciences', Phys_Math = 'Physical Sciences and Mathematics'),
                          preprints_used = fct_relevel(preprints_used, 'No', 'Yes, once', 'Yes, a few times', 'Yes, many times', 'Not sure'),
                          preprints_submitted = fct_relevel(preprints_submitted, 'No', 'Yes, once', 'Yes, a few times', 'Yes, many times', 'Not sure'))
 
@@ -123,9 +125,9 @@ preprintcred_means_by_position <- survey_data %>%
 preprintcred_means_by_position %>% 
   gt() %>%
   tab_header(title = 'Career Stage') %>%
-  cols_hide(columns = vars(`Grad Student_complete`, `Post doc_complete`, `Assist Prof_complete`,`Assoc Prof_complete`, `Full Prof_complete` )) %>%
+  cols_hide(columns = vars(Grad_Student_complete, Post_doc_complete, Assist_Prof_complete, Assoc_Prof_complete, Full_Prof_complete)) %>%
   data_color(
-    columns = vars(`Grad Student_mean`,`Post doc_mean`,`Assist Prof_mean`, `Assoc Prof_mean`, `Full Prof_mean`),
+    columns = vars(Grad_Student_mean, Post_doc_mean, Assist_Prof_mean, Assoc_Prof_mean, Full_Prof_mean),
     colors = scales::col_numeric(
       palette = paletteer::paletteer_d(
         package = "RColorBrewer",
@@ -133,23 +135,23 @@ preprintcred_means_by_position %>%
       ),
       domain = c(1, 5))
   ) %>%
-  cols_merge(col_1 = vars(`Grad Student_mean`), col_2 = vars(`Grad Student_sd`), pattern = '{1} ({2})') %>%
-  cols_merge(col_1 = vars(`Post doc_mean`), col_2 = vars(`Post doc_sd`), pattern = '{1} ({2})') %>%
-  cols_merge(col_1 = vars(`Assist Prof_mean`), col_2 = vars(`Assist Prof_sd`), pattern = '{1} ({2})') %>%
-  cols_merge(col_1 = vars(`Assoc Prof_mean`), col_2 = vars(`Assoc Prof_sd`), pattern = '{1} ({2})') %>%
-  cols_merge(col_1 = vars(`Full Prof_mean`), col_2 = vars(`Full Prof_sd`), pattern = '{1} ({2})') %>%
-  tab_spanner(label = 'Grad Student', columns = 'Grad Student_mean') %>%
-  tab_spanner(label = 'Post doc', columns = 'Post doc_mean') %>%
-  tab_spanner(label = 'Assist Prof', columns = 'Assist Prof_mean') %>%
-  tab_spanner(label = 'Assoc Prof', columns = 'Assoc Prof_mean') %>%
-  tab_spanner(label = 'Full Prof', columns = 'Full Prof_mean') %>%
+  cols_merge(columns = vars(Grad_Student_mean, Grad_Student_sd), pattern = '{1} ({2})') %>%
+  cols_merge(columns = vars(Post_doc_mean, Post_doc_sd), pattern = '{1} ({2})') %>%
+  cols_merge(columns = vars(Assist_Prof_mean, Assist_Prof_sd), pattern = '{1} ({2})') %>%
+  cols_merge(columns = vars(Assoc_Prof_mean, Assoc_Prof_sd), pattern = '{1} ({2})') %>%
+  cols_merge(columns = vars(Full_Prof_mean, Full_Prof_sd), pattern = '{1} ({2})') %>%
+  tab_spanner(label = 'Grad Student', columns = 'Grad_Student_mean') %>%
+  tab_spanner(label = 'Post doc', columns = 'Post_doc_mean') %>%
+  tab_spanner(label = 'Assist Prof', columns = 'Assist_Prof_mean') %>%
+  tab_spanner(label = 'Assoc Prof', columns = 'Assoc_Prof_mean') %>%
+  tab_spanner(label = 'Full Prof', columns = 'Full_Prof_mean') %>%
   cols_align(align = 'center', columns = ends_with('mean')) %>%
   cols_label(var_name = 'Potential Icon',
-             `Grad Student_mean` = paste0('n = ', min(preprintcred_means_by_position$`Grad Student_complete`),'-', max(preprintcred_means_by_position$`Grad Student_complete`)),
-             `Post doc_mean` = paste0('n = ',min(preprintcred_means_by_position$`Post doc_complete`),'-', max(preprintcred_means_by_position$`Post doc_complete`)),
-             `Assist Prof_mean` = paste0('n = ',min(preprintcred_means_by_position$`Assist Prof_complete`),'-', max(preprintcred_means_by_position$`Assist Prof_complete`)),
-             `Assoc Prof_mean` = paste0('n = ',min(preprintcred_means_by_position$`Assoc Prof_complete`),'-', max(preprintcred_means_by_position$`Assoc Prof_complete`)),
-             `Full Prof_mean` = paste0('n = ',min(preprintcred_means_by_position$`Full Prof_complete`),'-', max(preprintcred_means_by_position$`Full Prof_complete`)))
+             Grad_Student_mean = paste0('n = ', min(preprintcred_means_by_position$Grad_Student_complete),'-', max(preprintcred_means_by_position$Grad_Student_complete)),
+             Post_doc_mean = paste0('n = ',min(preprintcred_means_by_position$Post_doc_complete),'-', max(preprintcred_means_by_position$Post_doc_complete)),
+             Assist_Prof_mean = paste0('n = ',min(preprintcred_means_by_position$Assist_Prof_complete),'-', max(preprintcred_means_by_position$Assist_Prof_complete)),
+             Assoc_Prof_mean = paste0('n = ',min(preprintcred_means_by_position$Assoc_Prof_complete),'-', max(preprintcred_means_by_position$Assoc_Prof_complete)),
+             Full_Prof_mean = paste0('n = ',min(preprintcred_means_by_position$Full_Prof_complete),'-', max(preprintcred_means_by_position$Full_Prof_complete)))
 
 
 
@@ -189,7 +191,7 @@ preprintcred_means_by_discipline <-survey_data %>%
                               question == 'preprint_cred5_2' ~ "Info about indep group reproductions",
                               question == 'preprint_cred5_3' ~ "Info about indep robustness checks",
                               TRUE ~ 'Courtney missed a variable')) %>%
-  select(var_name, starts_with('Psychology'), starts_with('Other Social'), starts_with('Life'), starts_with('Medicine'), starts_with('Physical'))
+  select(var_name, starts_with('Psychology'), starts_with('Other_Social'), starts_with('Life'), starts_with('Med'), starts_with('Phy'))
 
 #building table
 preprintcred_means_by_discipline  %>% 
@@ -205,23 +207,23 @@ preprintcred_means_by_discipline  %>%
       ),
       domain = c(1, 5))
   ) %>%
-  cols_merge(col_1 = vars(Psychology_mean), col_2 = vars(Psychology_sd), pattern = '{1} ({2})') %>%
-  cols_merge(col_1 = vars(`Life Sciences (Biology)_mean`), col_2 = vars(`Life Sciences (Biology)_sd`), pattern = '{1} ({2})') %>%
-  cols_merge(col_1 = vars(`Other Social Sciences_mean`), col_2 = vars(`Other Social Sciences_sd`), pattern = '{1} ({2})') %>%
-  cols_merge(col_1 = vars(`Physical Sciences and Mathematics_mean`), col_2 = vars(`Physical Sciences and Mathematics_sd`), pattern = '{1} ({2})') %>%
-  cols_merge(col_1 = vars(`Medicine and Health Sciences_mean`), col_2 = vars(`Medicine and Health Sciences_sd`), pattern = '{1} ({2})') %>%
+  cols_merge(columns = vars(Psychology_mean, Psychology_sd), pattern = '{1} ({2})') %>%
+  cols_merge(columns = vars(Life_Sciences_mean, Life_Sciences_sd), pattern = '{1} ({2})') %>%
+  cols_merge(columns = vars(Other_SocialSciences_mean, Other_SocialSciences_sd), pattern = '{1} ({2})') %>%
+  cols_merge(columns = vars(Phys_Math_mean, Phys_Math_sd), pattern = '{1} ({2})') %>%
+  cols_merge(columns = vars(Med_Health_mean, Med_Health_sd), pattern = '{1} ({2})') %>%
   tab_spanner(label = 'Psychology', columns = 'Psychology_mean') %>%
-  tab_spanner(label = 'Life Sci (Bio)', columns = 'Life Sciences (Biology)_mean') %>%
-  tab_spanner(label = 'Med & Health Sci', columns = 'Medicine and Health Sciences_mean') %>%
-  tab_spanner(label = 'Other Soc Sci', columns = 'Other Social Sciences_mean') %>%
-  tab_spanner(label = 'Phys Sci & Math', columns = 'Physical Sciences and Mathematics_mean') %>%
+  tab_spanner(label = 'Life Sci (Bio)', columns = 'Life_Sciences_mean') %>%
+  tab_spanner(label = 'Med & Health Sci', columns = 'Med_Health_mean') %>%
+  tab_spanner(label = 'Other Soc Sci', columns = 'Other_SocialSciences_mean') %>%
+  tab_spanner(label = 'Phys Sci & Math', columns = 'Phys_Math_mean') %>%
   cols_align(align = 'center', columns = ends_with('mean')) %>%
   cols_label(var_name = 'Potential Icon',
              Psychology_mean = paste0('n = ', min(preprintcred_means_by_discipline$Psychology_complete),'-', max(preprintcred_means_by_discipline$Psychology_complete)),
-             `Life Sciences (Biology)_mean` = paste0('n = ',min(preprintcred_means_by_discipline$`Life Sciences (Biology)_complete`),'-', max(preprintcred_means_by_discipline$`Life Sciences (Biology)_complete`)),
-             `Physical Sciences and Mathematics_mean` = paste0('n = ',min(preprintcred_means_by_discipline$`Physical Sciences and Mathematics_complete`),'-', max(preprintcred_means_by_discipline$`Physical Sciences and Mathematics_complete`)),
-             `Medicine and Health Sciences_mean` = paste0('n = ',min(preprintcred_means_by_discipline$`Medicine and Health Sciences_complete`),'-', max(preprintcred_means_by_discipline$`Medicine and Health Sciences_complete`)),
-             `Other Social Sciences_mean` = paste0('n = ',min(preprintcred_means_by_discipline$`Other Social Sciences_complete`),'-', max(preprintcred_means_by_discipline$`Other Social Sciences_complete`)))
+             Life_Sciences_mean = paste0('n = ',min(preprintcred_means_by_discipline$Life_Sciences_complete),'-', max(preprintcred_means_by_discipline$Life_Sciences_complete)),
+             Phys_Math_mean = paste0('n = ',min(preprintcred_means_by_discipline$Phys_Math_complete),'-', max(preprintcred_means_by_discipline$Phys_Math_complete)),
+             Med_Health_mean = paste0('n = ',min(preprintcred_means_by_discipline$Med_Health_complete),'-', max(preprintcred_means_by_discipline$Med_Health_complete)),
+             Other_SocialSciences_mean = paste0('n = ',min(preprintcred_means_by_discipline$Other_SocialSciences_complete),'-', max(preprintcred_means_by_discipline$Other_SocialSciences_complete)))
 
 
 
