@@ -265,8 +265,15 @@ plot(likert(as.data.frame(service_cred)), ordered=T, text.size = 4) + ggtitle(se
 dev.off()
 
 
-# add spaces to discipline labels to allow for vertical graph orientation
-levels(survey_data$discipline_collapsed) <- gsub(" ", "\n", levels(survey_data$discipline_collapsed))
+# Alter names of levels and wrap for better graph display
+survey_data <- survey_data %>%
+                      mutate(discipline_collapsed = fct_recode(discipline_collapsed, 
+                                                               `Other Social Sciences` = 'Other_SocialSciences', 
+                                                               `Life Sciences (Biology)` = 'Life_Sciences', 
+                                                               `Medicine & Health` = 'Med_Health', 
+                                                               `Physical Science & Mathematics` = 'Phys_Math'))
+
+levels(survey_data$discipline_collapsed) <- str_wrap(levels(survey_data$discipline_collapsed),10)
 
 # use/submissions of preprints by discipline
 survey_data %>%
@@ -279,10 +286,13 @@ survey_data %>%
     ggplot(aes(fill = preprints_used, x = discipline_collapsed, y = perc)) +
     geom_col(stat = 'identity', position = 'fill') +
     geom_text(aes(x = discipline_collapsed ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
+    scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +  
     scale_fill_brewer(direction = -1, palette = "BrBG") +
     labs(y = 'Percentage of Respondents', x = 'Discipline') +
     theme(legend.text=element_text(size=16), legend.title = element_blank(),
-          axis.text = element_text(size = 16), axis.title = element_text(size = 16))
+          axis.text = element_text(size = 16), axis.title = element_text(size = 16),
+          axis.title.x = element_text(vjust = -.5),
+          plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))
     
 survey_data %>%
   filter(!is.na(preprints_submitted), discipline_collapsed != 'Other', discipline_collapsed != '(Missing)', preprints_submitted != 'Not sure') %>%
@@ -294,10 +304,13 @@ survey_data %>%
   ggplot(aes(fill = preprints_submitted, x = discipline_collapsed, y = perc)) +
   geom_col(stat = 'identity', position = 'fill') +
   geom_text(aes(x = discipline_collapsed ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
+  scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +
   scale_fill_brewer(direction = -1, palette = "BrBG") +
   labs(y = 'Percentage of Respondents', x = 'Discipline') +
   theme(legend.text=element_text(size=16), legend.title = element_blank(),
-        axis.text = element_text(size = 16), axis.title = element_text(size = 16))
+        axis.text = element_text(size = 16), axis.title = element_text(size = 16),
+        axis.title.x = element_text(vjust = -.5),
+        plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))
 
 
 # favor-use by discipline
