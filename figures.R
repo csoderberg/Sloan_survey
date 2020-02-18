@@ -364,7 +364,7 @@ career_used <- survey_data %>%
   theme(legend.text=element_text(size=16), legend.title = element_blank(),
         axis.text = element_text(size = 16), axis.title = element_blank(),
         legend.position = 'bottom',
-        plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))  +
+        plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))
 
 
 
@@ -385,7 +385,7 @@ career_submit <- survey_data %>%
   theme(legend.text=element_text(size=16), legend.title = element_blank(),
         axis.text = element_text(size = 16), axis.title = element_blank(),
         legend.position = 'bottom',
-        plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))  +
+        plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))
 
 
 career_used + career_submit + plot_layout(guides = 'collect') + 
