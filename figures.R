@@ -268,12 +268,12 @@ dev.off()
 # Alter names of levels and wrap for better graph display
 survey_data <- survey_data %>%
                       mutate(discipline_collapsed = fct_recode(discipline_collapsed, 
-                                                               `Psych` = 'Psychology',
+                                                               Psych = 'Psychology',
                                                                `Other Soc Sci` = 'Other_SocialSciences', 
                                                                `Life Sci (Bio)` = 'Life_Sciences', 
                                                                `Med & Health` = 'Med_Health', 
                                                                `Physical Sci & Math` = 'Phys_Math',
-                                                               `Eng` = 'Engineering'))
+                                                               Eng = 'Engineering'))
 
 levels(survey_data$discipline_collapsed) <- str_wrap(levels(survey_data$discipline_collapsed),10)
 
@@ -288,9 +288,10 @@ discipline_used <- survey_data %>%
     ggplot(aes(fill = preprints_used, x = discipline_collapsed, y = perc)) +
     geom_col(stat = 'identity', position = 'fill') +
     geom_text(aes(x = discipline_collapsed ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
+    ggtitle(' ') +  
     scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +  
     scale_fill_brewer(direction = -1, palette = "BrBG") +
-  guides(fill = guide_legend(reverse = TRUE)) +
+    guides(fill = guide_legend(reverse = TRUE)) +
     theme(legend.text=element_text(size=16), legend.title = element_blank(),
           axis.text = element_text(size = 16), axis.title = element_blank(),
           legend.position = 'bottom',
@@ -306,6 +307,7 @@ discipline_submit <- survey_data %>%
   ggplot(aes(fill = preprints_submitted, x = discipline_collapsed, y = perc)) +
   geom_col(stat = 'identity', position = 'fill') +
   geom_text(aes(x = discipline_collapsed ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
+  ggtitle(' ') +
   scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +
   scale_fill_brewer(direction = -1, palette = "BrBG") +
   guides(fill = guide_legend(reverse = TRUE)) +
@@ -315,7 +317,9 @@ discipline_submit <- survey_data %>%
         plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))
 
 
-discipline_used + discipline_submit + plot_layout(guides = 'collect') & theme(legend.position = 'bottom')
+discipline_used + discipline_submit + plot_layout(guides = 'collect') + 
+  plot_annotation(tag_levels = 'A', tag_prefix = 'Fig.1') & 
+  theme(legend.position = 'bottom')
 
 # favor-use by discipline
 discipline_favor <- survey_data %>% 
