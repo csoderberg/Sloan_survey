@@ -268,10 +268,12 @@ dev.off()
 # Alter names of levels and wrap for better graph display
 survey_data <- survey_data %>%
                       mutate(discipline_collapsed = fct_recode(discipline_collapsed, 
-                                                               `Other Social Sciences` = 'Other_SocialSciences', 
-                                                               `Life Sciences (Biology)` = 'Life_Sciences', 
-                                                               `Medicine & Health` = 'Med_Health', 
-                                                               `Physical Science & Mathematics` = 'Phys_Math'))
+                                                               `Psych` = 'Psychology',
+                                                               `Other Soc Sci` = 'Other_SocialSciences', 
+                                                               `Life Sci (Bio)` = 'Life_Sciences', 
+                                                               `Med & Health` = 'Med_Health', 
+                                                               `Physical Sci & Math` = 'Phys_Math',
+                                                               `Eng` = 'Engineering'))
 
 levels(survey_data$discipline_collapsed) <- str_wrap(levels(survey_data$discipline_collapsed),10)
 
