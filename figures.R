@@ -343,11 +343,11 @@ survey_data <- survey_data %>%
                                                              `Assoc Prof` = 'Assoc_Prof', 
                                                              `Full Prof` = 'Full_Prof'))
 
-levels(survey_data$acad_career_stage) <- str_wrap(levels(survey_data$acad_career_stage),15)
+levels(survey_data$acad_career_stage) <- str_wrap(levels(survey_data$acad_career_stage),10)
   
 
 # use/submissions of preprints by academic career stage
-survey_data %>%
+career_used <- survey_data %>%
   filter(!is.na(preprints_used), acad_career_stage != '(Missing)', preprints_used != 'Not sure') %>%
   mutate(preprints_used = fct_rev(preprints_used)) %>%
   group_by(acad_career_stage, preprints_used) %>%
@@ -357,16 +357,18 @@ survey_data %>%
   ggplot(aes(fill = preprints_used, x = reorder(acad_career_stage, desc(acad_career_stage)), y = perc)) +
   geom_col(stat = 'identity', position = 'fill') +
   geom_text(aes(x = acad_career_stage ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
+  ggtitle(' ') + 
+  guides(fill = guide_legend(reverse = TRUE)) +
   scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +
   scale_fill_brewer(direction = -1, palette = "BrBG") +
   theme(legend.text=element_text(size=16), legend.title = element_blank(),
-        axis.text = element_text(size = 16), axis.title = element_text(size = 16),
-        axis.title.x = element_text(vjust = -.5),
+        axis.text = element_text(size = 16), axis.title = element_blank(),
+        legend.position = 'bottom',
         plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))  +
-  labs(y = 'Percentage of Respondents', x = 'Career Stage')
 
 
-survey_data %>%
+
+career_submit <- survey_data %>%
   filter(!is.na(preprints_submitted), acad_career_stage != '(Missing)', preprints_submitted != 'Not sure') %>%
   mutate(preprints_submitted = fct_rev(preprints_submitted)) %>%
   group_by(acad_career_stage, preprints_submitted) %>%
@@ -376,14 +378,19 @@ survey_data %>%
   ggplot(aes(fill = preprints_submitted, x = reorder(acad_career_stage, desc(acad_career_stage)), y = perc)) +
   geom_col(stat = 'identity', position = 'fill') +
   geom_text(aes(x = acad_career_stage ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
+  ggtitle(' ') +
+  guides(fill = guide_legend(reverse = TRUE)) +
   scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +
   scale_fill_brewer(direction = -1, palette = "BrBG") +
   theme(legend.text=element_text(size=16), legend.title = element_blank(),
-        axis.text = element_text(size = 16), axis.title = element_text(size = 16),
-        axis.title.x = element_text(vjust = -.5),
+        axis.text = element_text(size = 16), axis.title = element_blank(),
+        legend.position = 'bottom',
         plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))  +
-  labs(y = 'Percentage of Respondents', x = 'Career Stage')
 
+
+career_used + career_submit + plot_layout(guides = 'collect') + 
+  plot_annotation(tag_levels = 'A', tag_prefix = 'Fig.2') & 
+  theme(legend.position = 'bottom')
 
 # favor-use by career stage
 career_stage <- survey_data %>% 
