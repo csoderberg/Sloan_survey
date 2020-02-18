@@ -276,7 +276,7 @@ survey_data <- survey_data %>%
 levels(survey_data$discipline_collapsed) <- str_wrap(levels(survey_data$discipline_collapsed),10)
 
 # use/submissions of preprints by discipline
-survey_data %>%
+discipline_used <- survey_data %>%
     filter(!is.na(preprints_used), discipline_collapsed != 'Other', discipline_collapsed != '(Missing)', preprints_used != 'Not sure') %>%  
     mutate(preprints_used = fct_rev(preprints_used)) %>%
     group_by(discipline_collapsed, preprints_used) %>%
@@ -288,13 +288,13 @@ survey_data %>%
     geom_text(aes(x = discipline_collapsed ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
     scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +  
     scale_fill_brewer(direction = -1, palette = "BrBG") +
-    labs(y = 'Percentage of Respondents', x = 'Discipline') +
+  guides(fill = guide_legend(reverse = TRUE)) +
     theme(legend.text=element_text(size=16), legend.title = element_blank(),
-          axis.text = element_text(size = 16), axis.title = element_text(size = 16),
-          axis.title.x = element_text(vjust = -.5),
+          axis.text = element_text(size = 16), axis.title = element_blank(),
+          legend.position = 'bottom',
           plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))
     
-survey_data %>%
+discipline_submit <- survey_data %>%
   filter(!is.na(preprints_submitted), discipline_collapsed != 'Other', discipline_collapsed != '(Missing)', preprints_submitted != 'Not sure') %>%
   mutate(preprints_submitted = fct_rev(preprints_submitted)) %>%
   group_by(discipline_collapsed, preprints_submitted) %>%
@@ -306,12 +306,14 @@ survey_data %>%
   geom_text(aes(x = discipline_collapsed ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
   scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +
   scale_fill_brewer(direction = -1, palette = "BrBG") +
-  labs(y = 'Percentage of Respondents', x = 'Discipline') +
+  guides(fill = guide_legend(reverse = TRUE)) +
   theme(legend.text=element_text(size=16), legend.title = element_blank(),
-        axis.text = element_text(size = 16), axis.title = element_text(size = 16),
-        axis.title.x = element_text(vjust = -.5),
+        axis.text = element_text(size = 16), axis.title = element_blank(),
+        legend.position = 'bottom',
         plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))
 
+
+discipline_used + discipline_submit + plot_layout(guides = 'collect') & theme(legend.position = 'bottom')
 
 # favor-use by discipline
 discipline_favor <- survey_data %>% 
