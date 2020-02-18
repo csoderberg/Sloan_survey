@@ -5,7 +5,7 @@ library(likert)
 library(here)
 library(skimr)
 library(gt)
-library(wesanderson)
+library(patchwork)
 
 ## reading in data
 osf_retrieve_file("https://osf.io/86upq/") %>% 
