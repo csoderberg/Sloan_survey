@@ -11,6 +11,12 @@ library(patchwork)
 osf_retrieve_file("https://osf.io/86upq/") %>% 
   osf_download(overwrite = T)
 
+services_table <- read_csv(here::here('pp_services_coding.csv'), col_types = cols(.default = col_factor())) %>%
+                      mutate(arxiv = fct_expand(arxiv, 'Partly'),
+                             ssrn = fct_expand(ssrn, 'Partly'),
+                             nber = fct_expand(nber, 'Partly', 'Yes')) %>%
+                      mutate_at(vars(arxiv:nber), ~fct_relevel(., c('No', 'Partly', 'Yes')))
+
 all_data <- read_csv(here::here('cleaned_data.csv'), col_types = cols(.default = col_number(),
                                                                          StartDate = col_datetime(format = '%m/%d/%y %H:%M'),
                                                                          EndDate = col_datetime(format = '%m/%d/%y %H:%M'),
@@ -461,7 +467,39 @@ as.data.frame(correlations) %>%
   ) %>%
   cols_align(align = 'center')
   
+
+
+## table of icons on services
+services_table %>%
+  mutate(nber = fct_expand(nber, 'Yes')) %>%
+  gt(rowname_col = 'icon') %>%
+  cols_align(align = 'center') %>%
+  data_color(
+    columns = vars(arxiv, ssrn, osf_preprints, chemarxiv, bioarxiv, preprints_org, peerj, nber),
+    colors = scales::col_factor(
+      palette = c('#D7B463', '#E5E5E5', '#57B5AD'),
+      domain = NULL
+    )
+  ) %>%
+  cols_label(
+    arxiv = 'Arxiv',
+    ssrn = 'SSRN',
+    osf_preprints = 'OSFpreprints',
+    chemarxiv = 'Chemarxiv',
+    bioarxiv = 'Bioarxiv',
+    preprints_org = 'Preprints.org',
+    nber = 'NBER'
+  ) %>%
+  tab_footnote(
+    footnote = "Service require commenters to have a public username, but username doesn't have to be a real name",
+    location = cells_body(
+      columns = vars(osf_preprints, bioarxiv, preprints_org, peerj),
+      rows = vars(`Identified comments`, `Anonymouse comments`)
+    )
+  )
   
+  
+
   
 
 
