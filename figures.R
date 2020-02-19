@@ -496,6 +496,27 @@ services_table %>%
       columns = vars(osf_preprints, bioarxiv, preprints_org, peerj),
       rows = vars(`Identified comments`, `Anonymouse comments`)
     )
+  ) %>%
+  tab_footnote(
+    footnote = "Service has a specific location for data/code information, but does not differentiate between the two",
+    location = cells_body(
+      columns = vars(bioarxiv),
+      rows = vars(`Link to study data`, `Link to study analysis scripts`)
+    )
+  ) %>%
+  tab_footnote(
+    footnote = "Service has a general place to link/upload other files, but types of files are not clearly identified",
+    location = cells_body(
+      columns = vars(osf_preprints, chemarxiv, peerj),
+      rows = vars(`Link to study analysis scripts`, `Link to materials`, `Link to pre-reg`)
+    )
+  ) %>%
+  tab_footnote(
+    footnote = "Service has a general place to link/upload other files, but types of files are not clearly identified",
+    location = cells_body(
+      columns = vars(osf_preprints, chemarxiv),
+      rows = vars(`Link to study data`)
+    )
   )
   
   
