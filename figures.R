@@ -278,6 +278,8 @@ survey_data <- survey_data %>%
 levels(survey_data$discipline_collapsed) <- str_wrap(levels(survey_data$discipline_collapsed),10)
 
 # use/submissions of preprints by discipline
+cols <- c('No' = '#D7B463', 'Yes, once' = '#ECD9AE', 'Yes, a few times' = '#ACDBD6', 'Yes, many times' = '#57B5AD')
+
 discipline_used <- survey_data %>%
     filter(!is.na(preprints_used), discipline_collapsed != 'Other', discipline_collapsed != '(Missing)', preprints_used != 'Not sure') %>%  
     mutate(preprints_used = fct_rev(preprints_used)) %>%
@@ -290,7 +292,7 @@ discipline_used <- survey_data %>%
     geom_text(aes(x = discipline_collapsed ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
     ggtitle(' ') +  
     scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +  
-    scale_fill_brewer(direction = -1, palette = "BrBG") +
+    scale_fill_manual(values = cols) +
     guides(fill = guide_legend(reverse = TRUE)) +
     theme(legend.text=element_text(size=16), legend.title = element_blank(),
           axis.text = element_text(size = 16), axis.title = element_blank(),
@@ -309,7 +311,7 @@ discipline_submit <- survey_data %>%
   geom_text(aes(x = discipline_collapsed ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
   ggtitle(' ') +
   scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +
-  scale_fill_brewer(direction = -1, palette = "BrBG") +
+  scale_fill_manual(values = cols) +
   guides(fill = guide_legend(reverse = TRUE)) +
   theme(legend.text=element_text(size=16), legend.title = element_blank(),
         axis.text = element_text(size = 16), axis.title = element_blank(),
@@ -360,7 +362,7 @@ career_used <- survey_data %>%
   ggtitle(' ') + 
   guides(fill = guide_legend(reverse = TRUE)) +
   scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +
-  scale_fill_brewer(direction = -1, palette = "BrBG") +
+  scale_fill_manual(values = cols) +
   theme(legend.text=element_text(size=16), legend.title = element_blank(),
         axis.text = element_text(size = 16), axis.title = element_blank(),
         legend.position = 'bottom',
@@ -381,7 +383,7 @@ career_submit <- survey_data %>%
   ggtitle(' ') +
   guides(fill = guide_legend(reverse = TRUE)) +
   scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +
-  scale_fill_brewer(direction = -1, palette = "BrBG") +
+  scale_fill_manual(values = cols) +
   theme(legend.text=element_text(size=16), legend.title = element_blank(),
         axis.text = element_text(size = 16), axis.title = element_blank(),
         legend.position = 'bottom',
