@@ -517,7 +517,23 @@ services_table %>%
       columns = vars(osf_preprints, chemarxiv),
       rows = vars(`Link to study data`)
     )
-  )
+  ) %>%
+  tab_footnote(
+    footnote = "Service only shows this information for author who uploaded preprint",
+    location = cells_body(
+      columns = vars(chemarxiv),
+      rows = vars(`Author's institution`, `Professional identity links`)
+    )
+  ) %>%
+  tab_footnote(
+    footnote = "Service shows which preprints have been accepted to journals, but not which submitted",
+    location = cells_body(
+      columns = vars(arxiv, osf_preprints, chemarxiv, bioarxiv, preprints_org, peerj, nber),
+      rows = vars(`Preprint submitted to a journal`)
+    )
+  ) %>%
+  tab_options(table.width = px(1000))
+  
   
   
 
