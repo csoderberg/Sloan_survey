@@ -533,6 +533,7 @@ services_table %>%
       rows = vars(`Preprint submitted to a journal`)
     )
   ) %>%
+  tab_header(title = 'Cues on Preprint Services') %>%
   tab_options(table.width = px(1000))
   
   
