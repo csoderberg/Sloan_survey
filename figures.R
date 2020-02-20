@@ -14,6 +14,7 @@ osf_retrieve_file("https://osf.io/86upq/") %>%
 services_table <- read_csv(here::here('pp_services_coding.csv'), col_types = cols(.default = col_factor())) %>%
                       mutate(arxiv = fct_expand(arxiv, 'Partly'),
                              ssrn = fct_expand(ssrn, 'Partly'),
+                             peerj = fct_expand(peerj, 'Partly'),
                              nber = fct_expand(nber, 'Partly', 'Yes')) %>%
                       mutate_at(vars(arxiv:nber), ~fct_relevel(., c('No', 'Partly', 'Yes')))
 
@@ -493,7 +494,7 @@ services_table %>%
   tab_footnote(
     footnote = "Service require commenters to have a public username, but username doesn't have to be a real name",
     location = cells_body(
-      columns = vars(osf_preprints, bioarxiv, preprints_org, peerj),
+      columns = vars(osf_preprints, bioarxiv, preprints_org),
       rows = vars(`Identified comments`, `Anonymouse comments`)
     )
   ) %>%
@@ -528,7 +529,7 @@ services_table %>%
   tab_footnote(
     footnote = "Service shows which preprints have been accepted to journals, but not which submitted",
     location = cells_body(
-      columns = vars(arxiv, osf_preprints, chemarxiv, bioarxiv, preprints_org, peerj, nber),
+      columns = vars(arxiv, ssrn, osf_preprints, chemarxiv, bioarxiv, preprints_org, peerj),
       rows = vars(`Preprint submitted to a journal`)
     )
   ) %>%
