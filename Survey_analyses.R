@@ -15,7 +15,7 @@ library(semPlot)
 osf_retrieve_file("https://osf.io/86upq/") %>% 
   osf_download(overwrite = T)
 
-survey_data <- read_csv(here::here('/Documents/data-science/Sloan_grant/Survey/cleaned_data.csv'), col_types = cols(.default = col_number(),
+survey_data <- read_csv(here::here('cleaned_data.csv'), col_types = cols(.default = col_number(),
                                                                          StartDate = col_datetime(format = '%m/%d/%y %H:%M'),
                                                                          EndDate = col_datetime(format = '%m/%d/%y %H:%M'),
                                                                          ResponseId = col_character(),
@@ -47,7 +47,7 @@ survey_data <- read_csv(here::here('/Documents/data-science/Sloan_grant/Survey/c
                 mutate(hdi_level = fct_explicit_na(hdi_level, '(Missing)'),
                        familiar = fct_explicit_na(familiar, '(Missing)'),
                        discipline_collapsed = fct_explicit_na(discipline_collapsed, '(Missing)')) %>%
-                mutate(missing_qs = rowSums(is.na(survey_data)))
+                mutate(missing_qs = rowSums(is.na(.)))
 
 #### basic sample characteristics ####
 
