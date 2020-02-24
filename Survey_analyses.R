@@ -202,14 +202,21 @@ fa4 <- fa(credibilty_qs, nfactors = 4, rotate = 'oblimin')
 fa4
 fa.diagram(fa4)
 
-# by group measurement invariance
+## measurement invariance calculations ##
+base_model <- 'traditional =~ preprint_cred1_1 + preprint_cred1_2 + preprint_cred1_3	
+               open_icons =~ preprint_cred4_1 + preprint_cred4_2 + preprint_cred4_3 + preprint_cred4_4	
+               verifications =~ preprint_cred5_1 + preprint_cred5_2 + preprint_cred5_3	
+               opinions =~ preprint_cred3_1 + preprint_cred3_2 + preprint_cred3_3	
+               external_support    =~ preprint_cred1_4 + preprint_cred2_1	
+               usage   =~ preprint_cred2_3 + preprint_cred2_4'
+
+# by career stages testing
 position_models <- cfa(model = base_model, data = survey_data, group = 'acad_career_stage')
 summary(position_models, fit.measures = T)
 
 measurementInvariance(model = base_model, data = survey_data, group = 'acad_career_stage')
 
-
-# by group measurement invariance
+# by discipline testing
 discipline_models <- cfa(model = base_model, data = survey_data %>% filter(discipline_collapsed != 'Other' & discipline_collapsed != 'Engineering'), group = 'discipline_collapsed')
 summary(discipline_models , fit.measures = T)
 
