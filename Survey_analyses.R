@@ -203,35 +203,6 @@ fa4
 fa.diagram(fa4)
 
 
-#### SEM model of favorability, preprint use, & preprint submission on 6 factors ####
-sem_data <- survey_data %>%
-              mutate(preprints_used = as.numeric(preprints_used) - 1,
-                     preprints_submitted = as.numeric(preprints_submitted) - 1)
-
-favor_use_model <- 'traditional =~ preprint_cred1_1 + preprint_cred1_2 + preprint_cred1_3
-               open_icons =~ preprint_cred4_1 + preprint_cred4_2 + preprint_cred4_3 + preprint_cred4_4
-               verifications =~ preprint_cred5_1 + preprint_cred5_2 + preprint_cred5_3
-               opinions =~ preprint_cred3_1 + preprint_cred3_2 + preprint_cred3_3
-               other    =~ preprint_cred1_4 + preprint_cred2_1
-               usage   =~ preprint_cred2_3 + preprint_cred2_4
-
-traditional ~ favor_use + preprints_used + preprints_submitted
-open_icons ~ favor_use + preprints_used + preprints_submitted
-verifications ~ favor_use + preprints_used + preprints_submitted
-opinions ~ favor_use + preprints_used + preprints_submitted
-other ~ favor_use + preprints_used + preprints_submitted
-usage ~ favor_use + preprints_used + preprints_submitted'
-
-favoruse_fit <- cfa(favor_use_model, sem_data)
-summary(favoruse_fit, fit.measures=TRUE)
-
-parameterEstimates(favoruse_fit, ci = T, level = .95, standardized = T) %>%
-  filter(op == '~')
-
-semPaths(favoruse_fit)
-
-
-
 # measurement invariance of factor model across positions
 base_model <- 'traditional =~ preprint_cred1_1 + preprint_cred1_2 + preprint_cred1_3
                open_icons =~ preprint_cred4_1 + preprint_cred4_2 + preprint_cred4_3 + preprint_cred4_4
