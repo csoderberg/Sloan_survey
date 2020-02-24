@@ -327,7 +327,7 @@ discipline_submit <- survey_data %>%
 
 
 discipline_used + discipline_submit + plot_layout(guides = 'collect') + 
-  plot_annotation(tag_levels = 'A', tag_prefix = 'Fig.1') & 
+  plot_annotation(tag_levels = 'A', tag_prefix = 'Fig.3') & 
   theme(legend.position = 'bottom')
 
 # favor-use by discipline
@@ -339,8 +339,8 @@ discipline_favor <- survey_data %>%
                     pivot_wider(names_from = discipline_collapsed, values_from = favor_use, id_cols = ResponseId) %>%
                     select(-ResponseId)
 
-plot(likert(as.data.frame(discipline_favor)), text.size = 4) +
-  theme(legend.title = element_blank(), legend.text=element_text(size=12), axis.text = element_text(size = 12))
+plot(likert(as.data.frame(discipline_favor)), text.size = 5) +
+  theme(legend.title = element_blank(), legend.text=element_text(size=18), axis.text = element_text(size = 18))
 
 
 # Alter names of levels and wrap for better graph display
@@ -398,7 +398,7 @@ career_submit <- survey_data %>%
 
 
 career_used + career_submit + plot_layout(guides = 'collect') + 
-  plot_annotation(tag_levels = 'A', tag_prefix = 'Fig.2') & 
+  plot_annotation(tag_levels = 'A', tag_prefix = 'Fig.4') & 
   theme(legend.position = 'bottom')
 
 # favor-use by career stage
@@ -410,8 +410,8 @@ career_stage <- survey_data %>%
   pivot_wider(names_from = acad_career_stage, values_from = favor_use, id_cols = ResponseId) %>%
   select(-ResponseId)
 
-plot(likert(as.data.frame(career_stage)), text.size = 4) +
-  theme(legend.title = element_blank(), legend.text=element_text(size=12), axis.text = element_text(size = 12))
+plot(likert(as.data.frame(career_stage)), text.size = 5) +
+  theme(legend.title = element_blank(), legend.text=element_text(size=18), axis.text = element_text(size = 18))
 
 # correlation favor-use/use/submissions and credibility questions
 correlations1 <- survey_data %>%
