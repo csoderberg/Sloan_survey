@@ -194,13 +194,13 @@ fa6 <- fa(credibilty_qs, nfactors = 6, rotate = 'oblimin')
 fa6
 fa.diagram(fa6)
 
-fa5 <- fa(credibilty_qs, nfactors = 5, rotate = 'oblimin') 
-fa5
-fa.diagram(fa5)
-
 fa4 <- fa(credibilty_qs, nfactors = 4, rotate = 'oblimin') 
 fa4
 fa.diagram(fa4)
+
+fa3 <- fa(credibilty_qs, nfactors = 3, rotate = 'oblimin') 
+fa3
+fa.diagram(fa3)
 
 ## measurement invariance calculations ##
 base_model <- 'traditional =~ preprint_cred1_1 + preprint_cred1_2 + preprint_cred1_3	
