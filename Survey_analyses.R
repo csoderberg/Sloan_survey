@@ -15,7 +15,7 @@ library(semPlot)
 osf_retrieve_file("https://osf.io/86upq/") %>% 
   osf_download(overwrite = T)
 
-survey_data <- read_csv(here::here('cleaned_data.csv'), col_types = cols(.default = col_number(),
+all_survey_data <- read_csv(here::here('cleaned_data.csv'), col_types = cols(.default = col_number(),
                                                                          StartDate = col_datetime(format = '%m/%d/%y %H:%M'),
                                                                          EndDate = col_datetime(format = '%m/%d/%y %H:%M'),
                                                                          ResponseId = col_character(),
@@ -52,17 +52,21 @@ survey_data <- read_csv(here::here('cleaned_data.csv'), col_types = cols(.defaul
 #### basic sample characteristics ####
 
 # total sample who consented
-nrow(survey_data)
+nrow(all_survey_data)
 
 #percentage of respondents who only consented
-round(100*sum(survey_data$missing_qs == 54)/nrow(survey_data), 2)
+round(100*sum(all_survey_data$missing_qs == 54)/nrow(all_survey_data), 2)
 
 #for those who answered 1 question, attrition rate
-round(100 * sum(survey_data$missing_qs < 54 & survey_data$Progress != 100)/sum(survey_data$missing_qs < 54), 2)
+round(100 * sum(all_survey_data$missing_qs < 54 & all_survey_data$Progress != 100)/sum(all_survey_data$missing_qs < 54), 2)
 
 #number who answered at least 1 question after consent
-sum(survey_data$missing_qs < 54)
+sum(all_survey_data$missing_qs < 54)
 
+
+##create dataset of only those who answered at least 1 question for analysis
+survey_data <- all_survey_data %>%
+                  filter(missing_qs < 54)
 
 # familiarity level of sample
 survey_data %>% 
