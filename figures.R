@@ -483,12 +483,13 @@ services_table %>%
     )
   ) %>%
   cols_label(
-    arxiv = 'Arxiv',
+    arxiv = 'arXiv',
     ssrn = 'SSRN',
     osf_preprints = 'OSFpreprints',
-    chemarxiv = 'Chemarxiv',
-    bioarxiv = 'Bioarxiv',
+    chemarxiv = 'ChemRxiv',
+    bioarxiv = 'bioRxiv',
     preprints_org = 'Preprints.org',
+    peerj = 'PeerJ',
     nber = 'NBER'
   ) %>%
   tab_footnote(
