@@ -150,36 +150,19 @@ credibility_data_long <- survey_data %>%
 
 # by discipline analysis #
 discipline_model <- lmer(response ~ discipline_collapsed + question + discipline_collapsed:question + (1|ResponseId), credibility_data_long %>% filter(discipline_collapsed != 'Other' & discipline_collapsed != 'Engineering'))
-anova_output <- anova(discipline_model)
+discipline_anova_output <- anova(discipline_model)
 
-
-discipline_gespartial <- ges.partial.SS.mix(dfm = anova_output[1, 3], dfe = anova_output[1, 4], ssm = anova_output[1, 1], sss = (anova_output[1, 1] * anova_output[1, 4])/(anova_output[1, 3] * anova_output[1, 5]), sse = (anova_output[2, 1] * anova_output[2, 4])/(anova_output[2, 3] * anova_output[2, 5]), Fvalue = anova_output[1, 5], a = .05)
-question_gespartial <- ges.partial.SS.mix(dfm = anova_output[2, 3], dfe = anova_output[2, 4], ssm = anova_output[2, 1], sss = (anova_output[1, 1] * anova_output[1, 4])/(anova_output[1, 3] * anova_output[1, 5]), sse = (anova_output[2, 1] * anova_output[2, 4])/(anova_output[2, 3] * anova_output[2, 5]), Fvalue = anova_output[2, 5], a = .05)
-
-
-discipline_gespartial$ges
-discipline_gespartial$geslow
-discipline_gespartial$geshigh
-
-question_gespartial$ges
-question_gespartial$geslow
-question_gespartial$geshigh
+discipline_r2 <- ((discipline_anova_output[1,3])/discipline_anova_output[1,4] * discipline_anova_output[1,5])/(1 + ((discipline_anova_output[1,3])/discipline_anova_output[1,4] * discipline_anova_output[1,5]))
+question_r2 <- ((discipline_anova_output[2,3])/discipline_anova_output[2,4] * discipline_anova_output[2,5])/(1 + ((discipline_anova_output[2,3])/discipline_anova_output[2,4] * discipline_anova_output[2,5]))
 
 # by academic position analysis #
 
 position_model <- lmer(response ~ acad_career_stage + question + acad_career_stage:question + (1|ResponseId), credibility_data_long)
-anova_output <- anova(position_model)
+position_anova_output <- anova(position_model)
 
-academic_gespartial <- ges.partial.SS.mix(dfm = anova_output[1, 3], dfe = anova_output[1, 4], ssm = anova_output[1, 1], sss = (anova_output[1, 1] * anova_output[1, 4])/(anova_output[1, 3] * anova_output[1, 5]), sse = (anova_output[2, 1] * anova_output[2, 4])/(anova_output[2, 3] * anova_output[2, 5]), Fvalue = anova_output[1, 5], a = .05)
-question_gespartial <- ges.partial.SS.mix(dfm = anova_output[2, 3], dfe = anova_output[2, 4], ssm = anova_output[2, 1], sss = (anova_output[1, 1] * anova_output[1, 4])/(anova_output[1, 3] * anova_output[1, 5]), sse = (anova_output[2, 1] * anova_output[2, 4])/(anova_output[2, 3] * anova_output[2, 5]), Fvalue = anova_output[2, 5], a = .05)
+position_r2 <- ((position_anova_output[1,3])/position_anova_output[1,4] * position_anova_output[1,5])/(1 + ((position_anova_output[1,3])/position_anova_output[1,4] * position_anova_output[1,5]))
+question_r2 <- ((position_anova_output[2,3])/position_anova_output[2,4] * position_anova_output[2,5])/(1 + ((position_anova_output[2,3])/position_anova_output[2,4] * position_anova_output[2,5]))
 
-academic_gespartial$ges
-academic_gespartial$geslow
-academic_gespartial$geshigh
-
-question_gespartial$ges
-question_gespartial$geslow
-question_gespartial$geshigh
 
 
 #### exploratory factor analysis ####
