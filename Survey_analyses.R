@@ -140,26 +140,28 @@ rcis_favor_use <- survey_data %>%
   corr.test(adjust = 'none', method = 'spearman')
 
 
-### initial career/disicpline analyses ###
+### cues by career/disicpline analyses ###
 
+# reformat data for lme models
 credibility_data_long <- survey_data %>%
   dplyr::select(ResponseId, starts_with('preprint_cred'), discipline_collapsed, acad_career_stage) %>%
   drop_na() %>%
   pivot_longer(cols = starts_with('preprint_cred'), names_to = 'question', values_to = 'response') %>%
   mutate(question = as.factor(question))
 
-# by discipline analysis #
+## by discipline analysis ##
 discipline_model <- lmer(response ~ discipline_collapsed + question + discipline_collapsed:question + (1|ResponseId), credibility_data_long %>% filter(discipline_collapsed != 'Other' & discipline_collapsed != 'Engineering'))
 discipline_anova_output <- anova(discipline_model)
 
+# R2 calculated using Edwards et al (2008) method
 discipline_r2 <- ((discipline_anova_output[1,3])/discipline_anova_output[1,4] * discipline_anova_output[1,5])/(1 + ((discipline_anova_output[1,3])/discipline_anova_output[1,4] * discipline_anova_output[1,5]))
 question_r2 <- ((discipline_anova_output[2,3])/discipline_anova_output[2,4] * discipline_anova_output[2,5])/(1 + ((discipline_anova_output[2,3])/discipline_anova_output[2,4] * discipline_anova_output[2,5]))
 
-# by academic position analysis #
-
+## by academic position analysis ##
 position_model <- lmer(response ~ acad_career_stage + question + acad_career_stage:question + (1|ResponseId), credibility_data_long)
 position_anova_output <- anova(position_model)
 
+# R2 calculated using Edwards et al (2008) method
 position_r2 <- ((position_anova_output[1,3])/position_anova_output[1,4] * position_anova_output[1,5])/(1 + ((position_anova_output[1,3])/position_anova_output[1,4] * position_anova_output[1,5]))
 question_r2 <- ((position_anova_output[2,3])/position_anova_output[2,4] * position_anova_output[2,5])/(1 + ((position_anova_output[2,3])/position_anova_output[2,4] * position_anova_output[2,5]))
 
