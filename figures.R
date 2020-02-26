@@ -43,6 +43,8 @@ all_data <- read_csv(here::here('cleaned_data.csv'), col_types = cols(.default =
                   mutate(acad_career_stage = fct_recode(acad_career_stage, Full_Prof = 'Full Prof', Assoc_Prof = 'Assoc Prof', Assist_Prof = 'Assist Prof', Post_doc = 'Post doc', Grad_Student = 'Grad Student'),
                          acad_career_stage = fct_relevel(acad_career_stage, 'Full_Prof', 'Assoc_Prof', 'Assist_Prof', 'Post_doc', 'Grad_Student'),
                          discipline_collapsed = fct_recode(discipline_collapsed, Other_SocialSciences = 'Other Social Sciences', Life_Sciences = 'Life Sciences (Biology)', Med_Health = 'Medicine and Health Sciences', Phys_Math = 'Physical Sciences and Mathematics'),
+                         preprints_used = recode_factor(preprints_used, `Not sure` = NA_character_),
+                         preprints_submitted = recode_factor(preprints_submitted, `Not sure` = NA_character_),
                          preprints_used = fct_relevel(preprints_used, 'No', 'Yes, once', 'Yes, a few times', 'Yes, many times', 'Not sure'),
                          preprints_submitted = fct_relevel(preprints_submitted, 'No', 'Yes, once', 'Yes, a few times', 'Yes, many times', 'Not sure'))
 
