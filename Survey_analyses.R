@@ -132,8 +132,25 @@ survey_data %>%
 
 100*sum(survey_data$country == 'United States of America', na.rm = T)/nrow(survey_data)
 
+# correlation favor-use/use/submissions and credibility questions
+correlations1 <- survey_data %>%
+  select(preprints_used, preprints_submitted, starts_with('preprint_cred')) %>%
+  mutate(preprints_used = as.numeric(preprints_used),
+         preprints_submitted = as.numeric(preprints_submitted)) %>%
+  cor(use = 'pairwise.complete.obs', method = 'spearman')
 
+correlations2 <- survey_data %>%
+  select(favor_use, starts_with('preprint_cred')) %>%
+  cor(use = 'pairwise.complete.obs')
 
+correlations <- as.data.frame(cbind(correlations1[3:21, 1:2], correlations2[2:20, 1])) 
+
+# median correlation magnitude
+median(correlations %>%
+         pivot_longer(names_to = 'corr_variable', cols = preprints_used:V3) %>%
+         select(value) %>%
+         mutate(value = abs(value)) %>%
+         pull(value))
 
 ### cues by career/disicpline analyses ###
 
