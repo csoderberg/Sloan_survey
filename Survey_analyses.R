@@ -154,6 +154,35 @@ median(correlations %>%
 
 ### cues by career/disicpline analyses ###
 
+## by discipline analysis ##
+discipline_q_means <- survey_data %>%
+  select(-c(consent, HDI_2017)) %>%
+  group_by(discipline_collapsed) %>%
+  skim_to_wide() %>%
+  rename(question = variable) %>%
+  filter(discipline_collapsed != 'Other' & discipline_collapsed != 'Engineering' & discipline_collapsed != '(Missing)') %>%
+  select(discipline_collapsed, question, mean) %>%
+  filter(grepl('preprint', question)) %>%
+  filter(!is.na(mean)) %>%
+  mutate(mean = as.numeric(mean)) %>%
+  group_by(discipline_collapsed, question)
+
+# largest diff between discipline wtihin question
+discipline_q_means %>%
+  group_by(question) %>%
+  summarize(min = min(mean), max = max(mean)) %>%
+  mutate(diff = max-min) %>%
+  arrange(desc(diff)) %>%
+  slice(1L)
+
+# largest diff between question wtihin discipline
+discipline_q_means %>%
+  group_by(discipline_collapsed) %>%
+  summarize(min = min(mean), max = max(mean)) %>%
+  mutate(diff = max-min) %>%
+  arrange(desc(diff)) %>%
+  slice(1L)
+
 # reformat data for lme models
 credibility_data_long <- survey_data %>%
   dplyr::select(ResponseId, starts_with('preprint_cred'), discipline_collapsed, acad_career_stage) %>%
@@ -168,6 +197,35 @@ discipline_anova_output <- anova(discipline_model)
 # R2 calculated using Edwards et al (2008) method
 discipline_r2 <- ((discipline_anova_output[1,3])/discipline_anova_output[1,4] * discipline_anova_output[1,5])/(1 + ((discipline_anova_output[1,3])/discipline_anova_output[1,4] * discipline_anova_output[1,5]))
 question_r2 <- ((discipline_anova_output[2,3])/discipline_anova_output[2,4] * discipline_anova_output[2,5])/(1 + ((discipline_anova_output[2,3])/discipline_anova_output[2,4] * discipline_anova_output[2,5]))
+
+
+## by career_stage ##
+career_q_means <- survey_data %>%
+  select(-c(consent, HDI_2017)) %>%
+  group_by(acad_career_stage) %>%
+  skim_to_wide() %>%
+  rename(question = variable) %>%
+  select(acad_career_stage, question, mean) %>%
+  filter(grepl('preprint', question)) %>%
+  filter(!is.na(mean)) %>%
+  mutate(mean = as.numeric(mean)) %>%
+  group_by(acad_career_stage, question)
+
+# largest diff between career stage wtihin question
+career_q_means %>%
+  group_by(question) %>%
+  summarize(min = min(mean), max = max(mean)) %>%
+  mutate(diff = max-min) %>%
+  arrange(desc(diff)) %>%
+  slice(1L)
+
+# largest diff between question wtihin career stage
+career_q_means %>%
+  group_by(acad_career_stage) %>%
+  summarize(min = min(mean), max = max(mean)) %>%
+  mutate(diff = max-min) %>%
+  arrange(desc(diff)) %>%
+  slice(1L)
 
 ## by academic position analysis ##
 position_model <- lmer(response ~ acad_career_stage + question + acad_career_stage:question + (1|ResponseId), credibility_data_long)
