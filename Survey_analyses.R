@@ -93,9 +93,13 @@ survey_data %>%
   group_by(preprints_submitted) %>% 
   tally()
 
+100* sum(survey_data$preprints_submitted == 'Yes, many times' | survey_data$preprints_submitted == 'Yes, a few times', na.rm = T)/nrow(survey_data)
+
 survey_data %>% 
   group_by(preprints_used) %>% 
   tally()
+
+100* sum(survey_data$preprints_used == 'Yes, many times' | survey_data$preprints_used == 'Yes, a few times', na.rm = T)/nrow(survey_data)
 
 100*sum(survey_data$preprints_used == 'Yes, many times' | survey_data$preprints_used == 'Yes, a few times' , na.rm = T)/nrow(survey_data) #percentage unfamiliar
 100*sum(survey_data$preprints_submitted == 'Yes, many times' | survey_data$preprints_submitted == 'Yes, a few times' , na.rm = T)/nrow(survey_data) #percentage unfamiliar
@@ -126,11 +130,7 @@ survey_data %>%
   summarize(n = n(), percentage = 100*n/nrow(survey_data)) %>%
   arrange(desc(n))
 
-survey_data %>% 
-  filter(continent == 'North America') %>%
-  group_by(country) %>% 
-  summarize(n = n(), percentage = 100*n/nrow(survey_data)) %>%
-  arrange(desc(n))
+100*sum(survey_data$country == 'United States of America', na.rm = T)/nrow(survey_data)
 
 # does favoring use correlate with use and/or submission?
 rcis_favor_use <- survey_data %>%
