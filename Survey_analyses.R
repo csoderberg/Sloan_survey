@@ -132,12 +132,7 @@ survey_data %>%
 
 100*sum(survey_data$country == 'United States of America', na.rm = T)/nrow(survey_data)
 
-# does favoring use correlate with use and/or submission?
-rcis_favor_use <- survey_data %>%
-  mutate(preprints_used = as.numeric(preprints_used)-1,
-         preprints_submitted = as.numeric(preprints_submitted)-1) %>%
-  select(preprints_used, preprints_submitted, favor_use) %>%
-  corr.test(adjust = 'none', method = 'spearman')
+
 
 
 ### cues by career/disicpline analyses ###
