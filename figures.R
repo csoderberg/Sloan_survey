@@ -9,7 +9,7 @@ library(patchwork)
 
 ## reading in data
 osf_retrieve_file("https://osf.io/86upq/") %>% 
-  osf_download(overwrite = T)
+  osf_download()
 
 services_table <- read_csv(here::here('pp_services_coding.csv'), col_types = cols(.default = col_factor())) %>%
                       mutate(arxiv = fct_expand(arxiv, 'Partly'),
@@ -56,7 +56,7 @@ all_data <- all_data %>%
 survey_data <- all_data %>%
   filter(missing_qs < 54)
 
-## Overall icons importance
+#### Overall icons importance (Fig 5)####
 preprint_cred <- survey_data %>%
   dplyr::select(preprint_cred1_1:preprint_cred5_3)
 
@@ -83,31 +83,41 @@ colnames(preprint_cred) <- c(preprint_cred1_1 = "Author's previous work",
                              preprint_cred5_3 = "Info about indep robustness checks")
 
 preprint_cred <- preprint_cred %>%
-  mutate_all(factor, levels=1:5, labels=choices, ordered=TRUE)
+  mutate_all(factor, levels=1:5, labels=str_wrap(choices, 10), ordered=TRUE)
 
 cred_preprints<- expression(atop("When assessing the credibility of a preprint", paste("how important would it be to have each of the following pieces of information?")))
-pdf("icon_cred.pdf", width=12.5, height=10)
+pdf("Fig5.pdf", width=12.5, height=10)
 plot(likert(as.data.frame(preprint_cred)), ordered=T, text.size = 4) + 
   ggtitle(cred_preprints)+
   theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank(), legend.text=element_text(size=12), axis.text = element_text(size = 12))
 dev.off()
 
+## outputs for PLOSBio formatting
+cred_preprints<- expression(atop("When assessing the credibility of a preprint", paste("how important would it be to have each of the following pieces of information?")))
+icon_plot <- plot(likert(as.data.frame(preprint_cred)), ordered=T, text.size = 2.8, wrap = 35) + 
+  ggtitle(cred_preprints)+
+  theme(plot.title = element_text(hjust = 0.5, size = 10), 
+        legend.title = element_blank(), 
+        legend.text=element_text(size=8), 
+        legend.justification = 'left',
+        legend.margin = margin(l = 0, unit = 'pt'),
+        axis.text = element_text(size = 8))
 
-# table by academic discipline
+ggsave(plot = icon_plot, "Fig5.eps", width=7.5, height=8.75, dpi = 600, units = 'in')
+
+#### table by career stage (Fig8) ####
 preprintcred_means_by_position <- survey_data %>%
   select(-c(consent, HDI_2017)) %>%
   group_by(acad_career_stage) %>%
-  skim_to_wide() %>%
-  rename(question = variable) %>%
-  select(acad_career_stage, question, complete, mean, sd) %>%
+  skim %>%
+  yank("numeric") %>%
+  rename(question = skim_variable) %>%
+  select(acad_career_stage, question, mean, sd) %>%
   filter(grepl('preprint', question)) %>%
   filter(!is.na(mean)) %>%
-  mutate(mean = as.numeric(mean),
-         sd = as.numeric(sd),
-         complete = as.numeric(complete)) %>%
-  gather(variable, value, -(question:acad_career_stage)) %>% 
-  unite(temp, acad_career_stage, variable) %>% 
-  spread(temp, value) %>%
+  pivot_wider(names_from = acad_career_stage, 
+              names_glue = "{acad_career_stage}_{.value}",
+              values_from = c(mean, sd)) %>%
   mutate(var_name = case_when(question == 'preprint_cred1_1' ~ "Author's previous work",
                               question == 'preprint_cred1_2' ~ "Author's institution",
                               question == 'preprint_cred1_3' ~ "Professional identity links",
@@ -130,11 +140,19 @@ preprintcred_means_by_position <- survey_data %>%
                               TRUE ~ 'Courtney missed a question')) %>%
   select(var_name, starts_with('Grad'), starts_with('Post'), starts_with('Assist'), starts_with('Assoc'), starts_with('Full'))
 
+# get df of complete response Ns
+career_stage_complete_ns <- survey_data %>%
+  filter(!is.na(acad_career_stage)) %>%
+  select(starts_with('preprint_'), acad_career_stage) %>%
+  pivot_longer(-acad_career_stage, names_to = 'question', values_to = 'response') %>%
+  filter(!is.na(response)) %>%
+  group_by(acad_career_stage, question) %>%
+  tally()
+
 #building table
-preprintcred_means_by_position %>% 
+career_stage_table <- preprintcred_means_by_position %>% 
   gt() %>%
   tab_header(title = 'Career Stage') %>%
-  cols_hide(columns = vars(Grad_Student_complete, Post_doc_complete, Assist_Prof_complete, Assoc_Prof_complete, Full_Prof_complete)) %>%
   data_color(
     columns = vars(Grad_Student_mean, Post_doc_mean, Assist_Prof_mean, Assoc_Prof_mean, Full_Prof_mean),
     colors = scales::col_numeric(
@@ -144,6 +162,7 @@ preprintcred_means_by_position %>%
       ),
       domain = c(1, 5))
   ) %>%
+  fmt_number(columns = 2:11, decimals = 2) %>%
   cols_merge(columns = vars(Grad_Student_mean, Grad_Student_sd), pattern = '{1} ({2})') %>%
   cols_merge(columns = vars(Post_doc_mean, Post_doc_sd), pattern = '{1} ({2})') %>%
   cols_merge(columns = vars(Assist_Prof_mean, Assist_Prof_sd), pattern = '{1} ({2})') %>%
@@ -156,30 +175,34 @@ preprintcred_means_by_position %>%
   tab_spanner(label = 'Full Prof', columns = 'Full_Prof_mean') %>%
   cols_align(align = 'center', columns = ends_with('mean')) %>%
   cols_label(var_name = 'Potential Icon',
-             Grad_Student_mean = paste0('n = ', min(preprintcred_means_by_position$Grad_Student_complete),'-', max(preprintcred_means_by_position$Grad_Student_complete)),
-             Post_doc_mean = paste0('n = ',min(preprintcred_means_by_position$Post_doc_complete),'-', max(preprintcred_means_by_position$Post_doc_complete)),
-             Assist_Prof_mean = paste0('n = ',min(preprintcred_means_by_position$Assist_Prof_complete),'-', max(preprintcred_means_by_position$Assist_Prof_complete)),
-             Assoc_Prof_mean = paste0('n = ',min(preprintcred_means_by_position$Assoc_Prof_complete),'-', max(preprintcred_means_by_position$Assoc_Prof_complete)),
-             Full_Prof_mean = paste0('n = ',min(preprintcred_means_by_position$Full_Prof_complete),'-', max(preprintcred_means_by_position$Full_Prof_complete)))
+             Grad_Student_mean = paste0('n = ', career_stage_complete_ns %>% filter(acad_career_stage == 'Grad_Student') %>% summarize(min = min(n)) %>% pull(min),'-', 
+             career_stage_complete_ns %>% filter(acad_career_stage == 'Grad_Student') %>% summarize(max = max(n)) %>% pull(max)),
+             Post_doc_mean = paste0('n = ', career_stage_complete_ns %>% filter(acad_career_stage == 'Post_doc') %>% summarize(min = min(n)) %>% pull(min),'-', 
+                                    career_stage_complete_ns %>% filter(acad_career_stage == 'Post_doc') %>% summarize(max = max(n)) %>% pull(max)),
+             Assist_Prof_mean = paste0('n = ', career_stage_complete_ns %>% filter(acad_career_stage == 'Assist_Prof') %>% summarize(min = min(n)) %>% pull(min),'-', 
+                                        career_stage_complete_ns %>% filter(acad_career_stage == 'Assist_Prof') %>% summarize(max = max(n)) %>% pull(max)),
+             Assoc_Prof_mean = paste0('n = ', career_stage_complete_ns %>% filter(acad_career_stage == 'Assoc_Prof') %>% summarize(min = min(n)) %>% pull(min),'-', 
+                                      career_stage_complete_ns %>% filter(acad_career_stage == 'Assoc_Prof') %>% summarize(max = max(n)) %>% pull(max)),
+             Full_Prof_mean =  paste0('n = ', career_stage_complete_ns %>% filter(acad_career_stage == 'Full_Prof') %>% summarize(min = min(n)) %>% pull(min),'-', 
+                                      career_stage_complete_ns %>% filter(acad_career_stage == 'Full_Prof') %>% summarize(max = max(n)) %>% pull(max)))
+
+gtsave(career_stage_table, filename = 'Fig8.png')
 
 
+#### table by academic discipline (Fig7)####
 
-# table by academic discipline
-
-preprintcred_means_by_discipline <-survey_data %>%
+preprintcred_means_by_discipline <- survey_data %>%
   select(-c(consent, HDI_2017)) %>%
   group_by(discipline_collapsed) %>%
-  skim_to_wide() %>%
-  rename(question = variable) %>%
-  select(discipline_collapsed, question, complete, mean, sd) %>%
+  skim %>%
+  yank("numeric") %>%
+  rename(question = skim_variable) %>%
+  select(discipline_collapsed, question, mean, sd) %>%
   filter(grepl('preprint', question)) %>%
   filter(!is.na(mean)) %>%
-  mutate(mean = as.numeric(mean),
-         sd = as.numeric(sd),
-         complete = as.numeric(complete)) %>%
-  gather(variable, value, -(question:discipline_collapsed)) %>% 
-  unite(temp, discipline_collapsed, variable) %>% 
-  spread(temp, value) %>%
+  pivot_wider(names_from = discipline_collapsed, 
+              names_glue = "{discipline_collapsed}_{.value}",
+              values_from = c(mean, sd)) %>%
   mutate(var_name = case_when(question == 'preprint_cred1_1' ~ "Author's previous work",
                               question == 'preprint_cred1_2' ~ "Author's institution",
                               question == 'preprint_cred1_3' ~ "Professional identity links",
@@ -202,11 +225,19 @@ preprintcred_means_by_discipline <-survey_data %>%
                               TRUE ~ 'Courtney missed a variable')) %>%
   select(var_name, starts_with('Psychology'), starts_with('Other_Social'), starts_with('Life'), starts_with('Med'), starts_with('Phy'))
 
+# get df of complete response Ns
+discipline_complete_ns <- survey_data %>%
+  filter(!is.na(discipline_collapsed)) %>%
+  select(starts_with('preprint_'), discipline_collapsed) %>%
+  pivot_longer(-discipline_collapsed, names_to = 'question', values_to = 'response') %>%
+  filter(!is.na(response)) %>%
+  group_by(discipline_collapsed, question) %>%
+  tally()
+
 #building table
-preprintcred_means_by_discipline  %>% 
+discipline_table <- preprintcred_means_by_discipline  %>% 
   gt() %>%
   tab_header(title = 'Credibility of Preprints by Discipline') %>%
-  cols_hide(columns = ends_with('complete')) %>%
   data_color(
     columns = ends_with('mean'),
     colors = scales::col_numeric(
@@ -216,6 +247,7 @@ preprintcred_means_by_discipline  %>%
       ),
       domain = c(1, 5))
   ) %>%
+  fmt_number(columns = 2:11, decimals = 2) %>%
   cols_merge(columns = vars(Psychology_mean, Psychology_sd), pattern = '{1} ({2})') %>%
   cols_merge(columns = vars(Life_Sciences_mean, Life_Sciences_sd), pattern = '{1} ({2})') %>%
   cols_merge(columns = vars(Other_SocialSciences_mean, Other_SocialSciences_sd), pattern = '{1} ({2})') %>%
@@ -224,17 +256,22 @@ preprintcred_means_by_discipline  %>%
   tab_spanner(label = 'Psychology', columns = 'Psychology_mean') %>%
   tab_spanner(label = 'Life Sci (Bio)', columns = 'Life_Sciences_mean') %>%
   tab_spanner(label = 'Med & Health Sci', columns = 'Med_Health_mean') %>%
-  tab_spanner(label = 'Other Soc Sci', columns = 'Other_SocialSciences_mean') %>%
-  tab_spanner(label = 'Phys Sci & Math', columns = 'Phys_Math_mean') %>%
+  tab_spanner(label = 'Soc Sci', columns = 'Other_SocialSciences_mean') %>%
+  tab_spanner(label = 'Math & Phys Sci', columns = 'Phys_Math_mean') %>%
   cols_align(align = 'center', columns = ends_with('mean')) %>%
   cols_label(var_name = 'Potential Icon',
-             Psychology_mean = paste0('n = ', min(preprintcred_means_by_discipline$Psychology_complete),'-', max(preprintcred_means_by_discipline$Psychology_complete)),
-             Life_Sciences_mean = paste0('n = ',min(preprintcred_means_by_discipline$Life_Sciences_complete),'-', max(preprintcred_means_by_discipline$Life_Sciences_complete)),
-             Phys_Math_mean = paste0('n = ',min(preprintcred_means_by_discipline$Phys_Math_complete),'-', max(preprintcred_means_by_discipline$Phys_Math_complete)),
-             Med_Health_mean = paste0('n = ',min(preprintcred_means_by_discipline$Med_Health_complete),'-', max(preprintcred_means_by_discipline$Med_Health_complete)),
-             Other_SocialSciences_mean = paste0('n = ',min(preprintcred_means_by_discipline$Other_SocialSciences_complete),'-', max(preprintcred_means_by_discipline$Other_SocialSciences_complete)))
+             Psychology_mean =  paste0('n = ', discipline_complete_ns %>% filter(discipline_collapsed == 'Psychology') %>% summarize(min = min(n)) %>% pull(min),'-', 
+                                       discipline_complete_ns %>% filter(discipline_collapsed == 'Psychology') %>% summarize(max = max(n)) %>% pull(max)),
+             Life_Sciences_mean =  paste0('n = ', discipline_complete_ns %>% filter(discipline_collapsed == 'Life_Sciences') %>% summarize(min = min(n)) %>% pull(min),'-', 
+                                          discipline_complete_ns %>% filter(discipline_collapsed == 'Life_Sciences') %>% summarize(max = max(n)) %>% pull(max)),
+             Phys_Math_mean =  paste0('n = ', discipline_complete_ns %>% filter(discipline_collapsed == 'Phys_Math') %>% summarize(min = min(n)) %>% pull(min),'-', 
+                                      discipline_complete_ns %>% filter(discipline_collapsed == 'Phys_Math') %>% summarize(max = max(n)) %>% pull(max)),
+             Med_Health_mean = paste0('n = ', discipline_complete_ns %>% filter(discipline_collapsed == 'Med_Health') %>% summarize(min = min(n)) %>% pull(min),'-', 
+                                      discipline_complete_ns %>% filter(discipline_collapsed == 'Med_Health') %>% summarize(max = max(n)) %>% pull(max)),
+             Other_SocialSciences_mean = paste0('n = ', discipline_complete_ns %>% filter(discipline_collapsed == 'Other_SocialSciences') %>% summarize(min = min(n)) %>% pull(min),'-', 
+                                                discipline_complete_ns %>% filter(discipline_collapsed == 'Other_SocialSciences') %>% summarize(max = max(n)) %>% pull(max)))
 
-
+gtsave(discipline_table, filename = 'Fig7.png')
 
 
 ## Overall service credibilitys
@@ -278,15 +315,16 @@ dev.off()
 survey_data <- survey_data %>%
                       mutate(discipline_collapsed = fct_recode(discipline_collapsed, 
                                                                Psych = 'Psychology',
-                                                               `Other Soc Sci` = 'Other_SocialSciences', 
+                                                               `Soc Sci` = 'Other_SocialSciences', 
                                                                `Life Sci (Bio)` = 'Life_Sciences', 
                                                                `Med & Health` = 'Med_Health', 
-                                                               `Physical Sci & Math` = 'Phys_Math',
+                                                               `Math & Phys Sci` = 'Phys_Math',
                                                                Eng = 'Engineering'))
 
 levels(survey_data$discipline_collapsed) <- str_wrap(levels(survey_data$discipline_collapsed),10)
 
-# use/submissions of preprints by discipline
+#### use/submissions of preprints by discipline (Fig3) ####
+
 cols <- c('No' = '#D7B463', 'Yes, once' = '#ECD9AE', 'Yes, a few times' = '#ACDBD6', 'Yes, many times' = '#57B5AD')
 
 discipline_used <- survey_data %>%
@@ -298,13 +336,13 @@ discipline_used <- survey_data %>%
            percentage = paste0(perc, '%')) %>%
     ggplot(aes(fill = preprints_used, x = discipline_collapsed, y = perc)) +
     geom_col(stat = 'identity', position = 'fill') +
-    geom_text(aes(x = discipline_collapsed ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
+    geom_text(aes(x = discipline_collapsed ,label = percentage), size = 2.5, position=position_fill(vjust=0.5)) +
     ggtitle(' ') +  
     scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +  
     scale_fill_manual(values = cols) +
     guides(fill = guide_legend(reverse = TRUE)) +
-    theme(legend.text=element_text(size=16), legend.title = element_blank(),
-          axis.text = element_text(size = 16), axis.title = element_blank(),
+    theme(legend.text=element_text(size=8), legend.title = element_blank(),
+          axis.text = element_text(size = 8), axis.title = element_blank(),
           legend.position = 'bottom',
           plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))
     
@@ -317,22 +355,24 @@ discipline_submit <- survey_data %>%
          percentage = paste0(perc, '%')) %>%
   ggplot(aes(fill = preprints_submitted, x = discipline_collapsed, y = perc)) +
   geom_col(stat = 'identity', position = 'fill') +
-  geom_text(aes(x = discipline_collapsed ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
+  geom_text(aes(x = discipline_collapsed ,label = percentage), size = 2.5, position=position_fill(vjust=0.5)) +
   ggtitle(' ') +
   scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +
   scale_fill_manual(values = cols) +
   guides(fill = guide_legend(reverse = TRUE)) +
-  theme(legend.text=element_text(size=16), legend.title = element_blank(),
-        axis.text = element_text(size = 16), axis.title = element_blank(),
+  theme(legend.text=element_text(size=8), legend.title = element_blank(),
+        axis.text = element_text(size = 8), axis.title = element_blank(),
         legend.position = 'bottom',
         plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))
 
 
-discipline_used + discipline_submit + plot_layout(guides = 'collect') + 
+discipline_use <- discipline_used + discipline_submit + plot_layout(guides = 'collect') + 
   plot_annotation(tag_levels = 'A', tag_prefix = 'Fig.3') & 
-  theme(legend.position = 'bottom')
+  theme(legend.position = 'bottom', legend.text=element_text(size=8), plot.tag = element_text(size = 8), axis.text = element_text(size = 8))
 
-# favor-use by discipline
+ggsave(plot = discipline_use, "Fig3.eps", width = 7.5, height = 5.0, dpi = 600, units = 'in')
+
+#### favor-use by discipline (Figure 1) ####
 discipline_favor <- survey_data %>% 
                     mutate(favor_use = as.factor(favor_use),
                            favor_use = fct_recode(favor_use, `Very unfavorable` = '-3', `Somewhat unfavorable` = '-2', `Slightly unfavorable` = '-1', `Neither unfavorable nor favorable` = '0', `Slightly favorable` = '1', `Somewhat favorable` = '2', `Very favorable`= '3')) %>% 
@@ -341,8 +381,10 @@ discipline_favor <- survey_data %>%
                     pivot_wider(names_from = discipline_collapsed, values_from = favor_use, id_cols = ResponseId) %>%
                     select(-ResponseId)
 
-plot(likert(as.data.frame(discipline_favor)), text.size = 5) +
-  theme(legend.title = element_blank(), legend.text=element_text(size=18), axis.text = element_text(size = 18))
+favor_use_plot <- plot(likert(as.data.frame(discipline_favor)), text.size = 2.8) +
+  theme(legend.title = element_blank(), legend.text=element_text(size=8), axis.text = element_text(size = 8))
+
+ggsave(plot = favor_use_plot, "Fig1.eps", width=7.5, height=5.0, dpi = 600, units = 'in')
 
 
 # Alter names of levels and wrap for better graph display
@@ -354,10 +396,10 @@ survey_data <- survey_data %>%
                                                              `Assoc Prof` = 'Assoc_Prof', 
                                                              `Full Prof` = 'Full_Prof'))
 
-levels(survey_data$acad_career_stage) <- str_wrap(levels(survey_data$acad_career_stage),10)
+levels(survey_data$acad_career_stage) <- str_wrap(levels(survey_data$acad_career_stage),6)
   
 
-# use/submissions of preprints by academic career stage
+#### use/submissions of preprints by academic career stage ####
 career_used <- survey_data %>%
   filter(!is.na(preprints_used), acad_career_stage != '(Missing)', preprints_used != 'Not sure') %>%
   mutate(preprints_used = fct_rev(preprints_used)) %>%
@@ -367,13 +409,13 @@ career_used <- survey_data %>%
          percentage = paste0(perc, '%')) %>%
   ggplot(aes(fill = preprints_used, x = reorder(acad_career_stage, desc(acad_career_stage)), y = perc)) +
   geom_col(stat = 'identity', position = 'fill') +
-  geom_text(aes(x = acad_career_stage ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
+  geom_text(aes(x = acad_career_stage ,label = percentage), size = 2.8, position=position_fill(vjust=0.5)) +
   ggtitle(' ') + 
   guides(fill = guide_legend(reverse = TRUE)) +
   scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +
   scale_fill_manual(values = cols) +
-  theme(legend.text=element_text(size=16), legend.title = element_blank(),
-        axis.text = element_text(size = 16), axis.title = element_blank(),
+  theme(legend.text=element_text(size=8), legend.title = element_blank(),
+        axis.text = element_text(size = 8), axis.title = element_blank(),
         legend.position = 'bottom',
         plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))
 
@@ -388,22 +430,24 @@ career_submit <- survey_data %>%
          percentage = paste0(perc, '%')) %>%
   ggplot(aes(fill = preprints_submitted, x = reorder(acad_career_stage, desc(acad_career_stage)), y = perc)) +
   geom_col(stat = 'identity', position = 'fill') +
-  geom_text(aes(x = acad_career_stage ,label = percentage), size = 6, position=position_fill(vjust=0.5)) +
+  geom_text(aes(x = acad_career_stage ,label = percentage), size = 2.8, position=position_fill(vjust=0.5)) +
   ggtitle(' ') +
   guides(fill = guide_legend(reverse = TRUE)) +
   scale_y_continuous(labels=scales::percent, expand = c(0, 0)) +
   scale_fill_manual(values = cols) +
-  theme(legend.text=element_text(size=16), legend.title = element_blank(),
-        axis.text = element_text(size = 16), axis.title = element_blank(),
+  theme(legend.text=element_text(size=8), legend.title = element_blank(),
+        axis.text = element_text(size = 8), axis.title = element_blank(),
         legend.position = 'bottom',
         plot.margin = margin(t = 15, l = 15, r = 15, b = 15, "pt"), axis.ticks.length.x = unit(5, 'pt'))
 
 
-career_used + career_submit + plot_layout(guides = 'collect') + 
+career_use <- career_used + career_submit + plot_layout(guides = 'collect') + 
   plot_annotation(tag_levels = 'A', tag_prefix = 'Fig.4') & 
-  theme(legend.position = 'bottom')
+  theme(legend.position = 'bottom', plot.tag = element_text(size = 8))
 
-# favor-use by career stage
+ggsave(plot = career_use, "Fig4.eps", width = 7.5, height = 5.0, dpi = 600, units = 'in')
+
+#### favor-use by career stage (Figure 2)####
 career_stage <- survey_data %>% 
   mutate(favor_use = as.factor(favor_use),
          favor_use = fct_recode(favor_use, `Very unfavorable` = '-3', `Somewhat unfavorable` = '-2', `Slightly unfavorable` = '-1', `Neither unfavorable nor favorable` = '0', `Slightly favorable` = '1', `Somewhat favorable` = '2', `Very favorable`= '3')) %>% 
@@ -412,10 +456,12 @@ career_stage <- survey_data %>%
   pivot_wider(names_from = acad_career_stage, values_from = favor_use, id_cols = ResponseId) %>%
   select(-ResponseId)
 
-plot(likert(as.data.frame(career_stage)), text.size = 5) +
-  theme(legend.title = element_blank(), legend.text=element_text(size=18), axis.text = element_text(size = 18))
+favor_use_career_plot <- plot(likert(as.data.frame(career_stage)), text.size = 2.8) +
+  theme(legend.title = element_blank(), legend.text=element_text(size=8), axis.text = element_text(size = 8))
 
-# correlation favor-use/use/submissions and credibility questions
+ggsave(plot = favor_use_career_plot, "Fig2.eps", width=7.5, height=5.0, dpi = 600, units = 'in')
+
+#### correlation favor-use/use/submissions and credibility questions (Fig6) ####
 correlations1 <- survey_data %>%
   select(preprints_used, preprints_submitted, starts_with('preprint_cred')) %>%
   mutate(preprints_used = as.numeric(preprints_used),
@@ -428,7 +474,7 @@ correlations2 <- survey_data %>%
 
 correlations <- cbind(correlations1[3:21, 1:2], correlations2[2:20, 1])
 
-as.data.frame(correlations) %>%
+correlation_table <- as.data.frame(correlations) %>%
   rename(favor_use = V3) %>%
   rownames_to_column('question') %>% 
   mutate(var_name = case_when(question == 'preprint_cred1_1' ~ "Author's previous work",
@@ -469,11 +515,12 @@ as.data.frame(correlations) %>%
     preprints_submitted = 'Submit Preprints'
   ) %>%
   cols_align(align = 'center')
-  
+
+gtsave(correlation_table, filename = 'Fig6.png')
 
 
-## table of icons on services
-services_table %>%
+#### table of icons on services ####
+services_icon_table <- services_table %>%
   mutate(nber = fct_expand(nber, 'Yes')) %>%
   gt(rowname_col = 'icon') %>%
   cols_align(align = 'center') %>%
@@ -484,6 +531,7 @@ services_table %>%
       domain = NULL
     )
   ) %>%
+  tab_options(data_row.padding = px(10)) %>% 
   cols_label(
     arxiv = 'arXiv',
     ssrn = 'SSRN',
@@ -498,7 +546,7 @@ services_table %>%
     footnote = "Service require commenters to have a public username, but username doesn't have to be a real name",
     location = cells_body(
       columns = vars(osf_preprints, bioarxiv, preprints_org),
-      rows = vars(`Identified comments`, `Anonymouse comments`)
+      rows = vars(`Identified comments`, `Anonymous comments`)
     )
   ) %>%
   tab_footnote(
@@ -536,11 +584,10 @@ services_table %>%
       rows = vars(`Preprint submitted to a journal`)
     )
   ) %>%
-  tab_header(title = 'Cues on Preprint Services') %>%
-  tab_options(table.width = px(1000))
+  tab_header(title = 'Cues on Preprint Services')
   
   
-  
+gtsave(services_icon_table, filename = 'Fig10.png')
 
   
 
