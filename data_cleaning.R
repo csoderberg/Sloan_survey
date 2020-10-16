@@ -7,7 +7,7 @@ library(countrycode)
 ###importing data
 
 osf_retrieve_file("https://osf.io/q4zf8/") %>% 
-  osf_download(overwrite = T)
+  osf_download()
 
 survey_data_choices <- read_csv(here::here('choice_data.csv'), col_types = cols(.default = col_factor(),
                                                                  ResponseId = col_character(),
@@ -19,13 +19,13 @@ survey_data_choices <- read_csv(here::here('choice_data.csv'), col_types = cols(
                             select(ResponseId, familiar, preprints_submitted, preprints_used, position, discipline, country)
 
 osf_retrieve_file("https://osf.io/xnbhu/") %>% 
-  osf_download(overwrite = T)
+  osf_download()
 
 survey_data_numeric <- read_csv(here::here('numeric_data.csv')) %>%
                             select(-c(familiar, preprints_submitted, preprints_used, position, discipline, country))
 
 osf_retrieve_file("https://osf.io/7ery8/") %>% 
-  osf_download(overwrite = T)
+  osf_download()
 
 hdi_data <- read_csv(here::here('hdi_2017_data.csv'), col_types =cols(country = col_factor(), HDI_2017 = col_number())) %>% 
                             select(country, HDI_2017)
