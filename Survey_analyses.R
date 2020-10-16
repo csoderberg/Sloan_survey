@@ -13,7 +13,7 @@ library(semPlot)
 
 ## reading in data
 osf_retrieve_file("https://osf.io/86upq/") %>% 
-  osf_download(overwrite = T)
+  osf_download()
 
 all_survey_data <- read_csv(here::here('cleaned_data.csv'), col_types = cols(.default = col_number(),
                                                                          StartDate = col_datetime(format = '%m/%d/%y %H:%M'),
@@ -86,34 +86,42 @@ survey_data %>%
 100*sum(survey_data$favor_use == 0, na.rm = T)/nrow(survey_data) #percentage neutral
 100*sum(survey_data$favor_use > 0, na.rm = T)/nrow(survey_data) #percentage favorable
 
-# preprint usage
-100* sum(survey_data$preprints_used == 'Yes, many times' | survey_data$preprints_used == 'Yes, a few times' | survey_data$preprints_submitted == 'Yes, many times' | survey_data$preprints_submitted == 'Yes, a few times', na.rm = T)/nrow(survey_data)
+# preprint usage/submission
 
+# used or submitted
+100* sum(survey_data$preprints_used == 'Yes, many times' | 
+           survey_data$preprints_used == 'Yes, a few times' | 
+           survey_data$preprints_submitted == 'Yes, many times' | 
+           survey_data$preprints_submitted == 'Yes, a few times', na.rm = T)/nrow(survey_data)
+
+# breakdown of submission rates
 survey_data %>% 
   group_by(preprints_submitted) %>% 
   tally()
 
+# percentage many/few submissions
 100* sum(survey_data$preprints_submitted == 'Yes, many times' | survey_data$preprints_submitted == 'Yes, a few times', na.rm = T)/nrow(survey_data)
 
+# breakdown of use rates
 survey_data %>% 
   group_by(preprints_used) %>% 
   tally()
 
+# percentage many/few usage
 100* sum(survey_data$preprints_used == 'Yes, many times' | survey_data$preprints_used == 'Yes, a few times', na.rm = T)/nrow(survey_data)
 
-100*sum(survey_data$preprints_used == 'Yes, many times' | survey_data$preprints_used == 'Yes, a few times' , na.rm = T)/nrow(survey_data) #percentage unfamiliar
-100*sum(survey_data$preprints_submitted == 'Yes, many times' | survey_data$preprints_submitted == 'Yes, a few times' , na.rm = T)/nrow(survey_data) #percentage unfamiliar
 
 # demographics #
 survey_data %>% 
   group_by(acad_career_stage) %>% 
   tally()
 
-100*sum(survey_data$acad_career_stage == 'Grad Student' | survey_data$acad_career_stage == 'Post doc' , na.rm = T)/nrow(survey_data) #percentage unfamiliar
-100*sum(grepl('Prof', survey_data$acad_career_stage))/nrow(survey_data) #percentage unfamiliar
-100*sum(is.na(survey_data$acad_career_stage))/nrow(survey_data) #percentage unfamiliar
+# career level percentages
+100*sum(survey_data$acad_career_stage == 'Grad Student' | survey_data$acad_career_stage == 'Post doc' , na.rm = T)/nrow(survey_data) #percentage grad/post docs
+100*sum(grepl('Prof', survey_data$acad_career_stage))/nrow(survey_data) #percentage profs
+100*sum(is.na(survey_data$acad_career_stage))/nrow(survey_data) #percentage didnt' answer/didn't fall into another category
 
-
+# discipline percentages
 survey_data %>% 
   group_by(bepress_tier1) %>%
   summarize(n = n(), percentage = 100*n/nrow(survey_data))
@@ -158,14 +166,14 @@ median(correlations %>%
 discipline_q_means <- survey_data %>%
   select(-c(consent, HDI_2017)) %>%
   group_by(discipline_collapsed) %>%
-  skim_to_wide() %>%
-  rename(question = variable) %>%
+  skim() %>%
+  yank('numeric') %>%
+  rename(question = skim_variable) %>%
   filter(discipline_collapsed != 'Other' & discipline_collapsed != 'Engineering' & discipline_collapsed != '(Missing)') %>%
   select(discipline_collapsed, question, mean) %>%
   filter(grepl('preprint', question)) %>%
   filter(!is.na(mean)) %>%
-  mutate(mean = as.numeric(mean)) %>%
-  group_by(discipline_collapsed, question)
+  mutate(mean = as.numeric(mean))
 
 # largest diff between discipline wtihin question
 discipline_q_means %>%
@@ -203,13 +211,13 @@ question_r2 <- ((discipline_anova_output[2,3])/discipline_anova_output[2,4] * di
 career_q_means <- survey_data %>%
   select(-c(consent, HDI_2017)) %>%
   group_by(acad_career_stage) %>%
-  skim_to_wide() %>%
-  rename(question = variable) %>%
+  skim() %>%
+  yank('numeric') %>%
+  rename(question = skim_variable) %>%
   select(acad_career_stage, question, mean) %>%
   filter(grepl('preprint', question)) %>%
   filter(!is.na(mean)) %>%
-  mutate(mean = as.numeric(mean)) %>%
-  group_by(acad_career_stage, question)
+  mutate(mean = as.numeric(mean))
 
 # largest diff between career stage wtihin question
 career_q_means %>%
